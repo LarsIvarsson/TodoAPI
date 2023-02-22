@@ -18,7 +18,7 @@ namespace TodoAPI.Controllers
 
 
 
-        // GET: api/<TodosController>
+        // GET api/<TodosController>
         [HttpGet]
         public ActionResult<IEnumerable<TodoModel>> Get()
         {
@@ -36,12 +36,7 @@ namespace TodoAPI.Controllers
             {
                 return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
             }
-            else
-            {
-                return BadRequest("Todo task does not exist");
-            }
-
-
+            return NotFound("Todo task does not exist");
         }
 
         // POST api/<TodosController>
@@ -51,29 +46,43 @@ namespace TodoAPI.Controllers
             List<TodoModel> todos = context.Todos.ToList();
 
             TodoModel? dbModel = todos.FirstOrDefault(t => t.Todo == todo.Todo);
-
             if (dbModel == null)
             {
                 context.Todos.Add(todo);
                 context.SaveChanges();
                 return Ok();
             }
-            else
-            {
-                return BadRequest("Todo task already exists");
-            }
+            return BadRequest("Todo task already exists");
         }
 
         // PUT api/<TodosController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] TodoModel todo)
+        public IActionResult Put(int id, [FromBody] TodoModel todo)
         {
+            // code not yet implemented for updating Todos
+            var existingTodo = context.Todos.FirstOrDefault(t => t.Id == id);
+
+            if (existingTodo == null)
+            {
+                return NotFound("Todo task was not found");
+            }
+            existingTodo.Todo = todo.Todo;
+            existingTodo.Description = todo.Description;
+            existingTodo.IsCompleted = todo.IsCompleted;
+            return Ok();
         }
 
         // DELETE api/<TodosController>/5
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
+            TodoModel? todoToDelete = context.Todos.FirstOrDefault(t => t.Id == id);
+            if (todoToDelete == null)
+            {
+                return NotFound("Todo task wot found");
+            }
+            context.Todos.Remove(todoToDelete);
+            context.SaveChanges();
             return Ok();
         }
     }
