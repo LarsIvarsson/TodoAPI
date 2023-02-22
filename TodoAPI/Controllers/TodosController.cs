@@ -22,21 +22,46 @@ namespace TodoAPI.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<TodoModel>> Get()
         {
-            return Ok(context.Todos);
+            return Ok(context.Todos.ToList());
         }
 
         // GET api/<TodosController>/5
         [HttpGet("{id}")]
         public ActionResult<TodoModel> Get(int id)
         {
-            return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
+            List<TodoModel> todos = context.Todos.ToList();
+
+            TodoModel? dbModel = todos.FirstOrDefault(t => t.Id == id);
+            if (dbModel != null)
+            {
+                return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
+            }
+            else
+            {
+                return BadRequest("Todo task does not exist");
+            }
+
+
         }
 
         // POST api/<TodosController>
         [HttpPost]
-        public void Post([FromBody] TodoModel todo)
+        public IActionResult Post([FromBody] TodoModel todo)
         {
+            List<TodoModel> todos = context.Todos.ToList();
 
+            TodoModel? dbModel = todos.FirstOrDefault(t => t.Todo == todo.Todo);
+
+            if (dbModel == null)
+            {
+                context.Todos.Add(todo);
+                context.SaveChanges();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Todo task already exists");
+            }
         }
 
         // PUT api/<TodosController>/5
