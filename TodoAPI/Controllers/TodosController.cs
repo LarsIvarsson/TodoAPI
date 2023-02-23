@@ -16,30 +16,33 @@ namespace TodoAPI.Controllers
             this.context = context;
         }
 
-
-
-        // GET api/<TodosController>
+        //    === GET (ALL) ===    api/<TodosController>
         [HttpGet]
         public ActionResult<IEnumerable<TodoModel>> Get()
         {
+            List<TodoModel> todos = context.Todos.ToList();
+            if (todos == null)
+            {
+                return NotFound("No todo tasks were found");
+            }
             return Ok(context.Todos.ToList());
         }
 
-        // GET api/<TodosController>/5
+        //    === GET (BY ID) ===    api/<TodosController>/5
         [HttpGet("{id}")]
         public ActionResult<TodoModel> Get(int id)
         {
             List<TodoModel> todos = context.Todos.ToList();
 
             TodoModel? dbModel = todos.FirstOrDefault(t => t.Id == id);
-            if (dbModel != null)
+            if (dbModel == null)
             {
-                return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
+                return NotFound("Todo task does not exist");
             }
-            return NotFound("Todo task does not exist");
+            return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
         }
 
-        // POST api/<TodosController>
+        //    === POST (CREATE) ===    api/<TodosController>
         [HttpPost]
         public IActionResult Post([FromBody] TodoModel todo)
         {
@@ -55,13 +58,11 @@ namespace TodoAPI.Controllers
             return BadRequest("Todo task already exists");
         }
 
-        // PUT api/<TodosController>/5
+        //    === PUT (UPDATE) ===    api/<TodosController>/5
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] TodoModel todo)
         {
-            // code not yet implemented for updating Todos
             var existingTodo = context.Todos.FirstOrDefault(t => t.Id == id);
-
             if (existingTodo == null)
             {
                 return NotFound("Todo task was not found");
@@ -69,10 +70,12 @@ namespace TodoAPI.Controllers
             existingTodo.Todo = todo.Todo;
             existingTodo.Description = todo.Description;
             existingTodo.IsCompleted = todo.IsCompleted;
-            return Ok();
+            context.Todos.Update(existingTodo);
+            context.SaveChanges();
+            return Ok("Todo task was successfully updated");
         }
 
-        // DELETE api/<TodosController>/5
+        //    === DELETE (BY ID) ===    api/<TodosController>/5
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
