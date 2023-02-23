@@ -25,35 +25,31 @@ namespace TodoAPI.Controllers
             {
                 return NotFound("No todo tasks were found");
             }
-            return Ok(context.Todos.ToList());
+            return Ok(todos);
         }
 
         //    === GET (BY ID) ===    api/<TodosController>/5
         [HttpGet("{id}")]
         public ActionResult<TodoModel> Get(int id)
         {
-            List<TodoModel> todos = context.Todos.ToList();
-
-            TodoModel? dbModel = todos.FirstOrDefault(t => t.Id == id);
+            TodoModel? dbModel = context.Todos.FirstOrDefault(t => t.Id == id);
             if (dbModel == null)
             {
                 return NotFound("Todo task does not exist");
             }
-            return Ok(context.Todos.FirstOrDefault(t => t.Id == id));
+            return Ok(dbModel);
         }
 
         //    === POST (CREATE) ===    api/<TodosController>
         [HttpPost]
-        public IActionResult Post([FromBody] TodoModel todo)
+        public ActionResult<TodoModel> Post([FromBody] TodoModel todo)
         {
-            List<TodoModel> todos = context.Todos.ToList();
-
-            TodoModel? dbModel = todos.FirstOrDefault(t => t.Todo == todo.Todo);
+            TodoModel? dbModel = context.Todos.FirstOrDefault(t => t.Todo == todo.Todo);
             if (dbModel == null)
             {
                 context.Todos.Add(todo);
                 context.SaveChanges();
-                return Ok();
+                return Ok(todo);
             }
             return BadRequest("Todo task already exists");
         }
@@ -70,7 +66,7 @@ namespace TodoAPI.Controllers
             existingTodo.Todo = todo.Todo;
             existingTodo.Description = todo.Description;
             existingTodo.IsCompleted = todo.IsCompleted;
-            context.Todos.Update(existingTodo);
+            // context.Todos.Update(existingTodo);
             context.SaveChanges();
             return Ok("Todo task was successfully updated");
         }
@@ -79,14 +75,14 @@ namespace TodoAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            TodoModel? todoToDelete = context.Todos.FirstOrDefault(t => t.Id == id);
+            var todoToDelete = context.Todos.FirstOrDefault(t => t.Id == id);
             if (todoToDelete == null)
             {
                 return NotFound("Todo task wot found");
             }
             context.Todos.Remove(todoToDelete);
             context.SaveChanges();
-            return Ok();
+            return Ok("Todo task was successfully removed");
         }
     }
 }

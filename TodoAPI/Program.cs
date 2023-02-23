@@ -21,6 +21,17 @@ namespace TodoAPI
             var connectionString = builder.Configuration.GetConnectionString("TodoDbConnection");
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                });
+            });
+
 
             var app = builder.Build();
 
@@ -32,12 +43,9 @@ namespace TodoAPI
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowAll");
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }
